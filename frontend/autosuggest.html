@@ -12,16 +12,19 @@
             left: 20px;
             font-size: 24px;
         }
+
         .right {
             position: fixed;
             top: 20px;
             right: 20px;
             font-size: 18px;
         }
+
         .search {
             text-align: center;
             margin-top: 100px;
         }
+
         .colortext {
             color: blue;
         }
@@ -47,11 +50,26 @@
             font-size: 16px;
             background: transparent;
         }
-   .suggestion-box {
-    width: 40%;
-    margin: 5px auto;
-    border: 1px solid
-}
+
+        .suggestion-box {
+            width: 40%;
+            margin: 5px auto;
+            border: 1px solid #ccc;
+            border-top: none;
+            text-align: left;
+            border-radius: 0 0 10px 10px;
+            overflow: hidden;
+        }
+
+        .suggestion-item {
+            padding: 10px 15px;
+            cursor: pointer;
+            border-bottom: 1px solid #eee;
+        }
+
+        .suggestion-item:hover {
+            background: #f2f2f2;
+        }
     </style>
 </head>
 <body>
@@ -68,13 +86,54 @@
 
         <div class="search-box">
             <span>&#128269;</span>
-            <input type="text" placeholder="Start typing to search phrases">
+            <input
+                type="text"
+                id="searchBox"
+                placeholder="Start typing to search phrases">
         </div>
 
-        <div class="suggestion-box">
-            Suggestion Box
-        </div>
+        <div class="suggestion-box" id="suggestions"></div>
     </div>
+
+    <script>
+        const searchBox = document.getElementById("searchBox");
+        const suggestions = document.getElementById("suggestions");
+
+        searchBox.addEventListener("input", function () {
+
+            const query = searchBox.value.trim();
+
+            if (query === "") {
+                suggestions.innerHTML = "";
+                return;
+            }
+
+            const url = `https://autosuggest-backend.onrender.com/api/autosuggest?q=${encodeURIComponent(query)}&algorithm=brute&limit=10&weighted=false`;
+
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+
+                    suggestions.innerHTML = "";
+
+                    data.results.forEach(item => {
+                        const div = document.createElement("div");
+                        div.className = "suggestion-item";
+                        div.textContent = item.text;
+
+                        div.addEventListener("click", function () {
+                            searchBox.value = item.text;
+                            suggestions.innerHTML = "";
+                        });
+
+                        suggestions.appendChild(div);
+                    });
+                })
+                .catch(error => {
+                    console.error(error);
+                });
+        });
+    </script>
 
 </body>
 </html>
